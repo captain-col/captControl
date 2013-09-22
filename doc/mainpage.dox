@@ -2,20 +2,24 @@
 // file is essentially the global readme for this library. This is a
 // collection of \mainpage and \page directives
 
-/*! \mainpage The CAPTAIN software control package.
+/*! \mainpage The CAPTAIN job control package.
 
  \section captControl Introduction
 
- This provides a set of bash functions to make running CAPTAIN jobs a
- cinch.  It is useful for everyday CAPTAIN work, but is aimed at batch
- processing.  Functions are provided for standard configuration options,
- and most operations can be done by calling a single function.  As an
- example of a typical job to run the reconstruction on a raw data file for
- run 321, take at LANSCE:
+ This package provides the run control tools used to build captain jobs.
+ The CAPTAIN job control language is "bash", and this provides the tools to
+ make scripts easy to write and configure.  It is useful for everyday
+ CAPTAIN work, but is aimed at batch processing.  Functions are provided
+ for standard configuration options, and most operations can be done by
+ calling a single function.  As an example of a typical job to run the
+ reconstruction on a raw data file for run 321, taken at LANSCE, using a
+ trigger from the accelerator might have the script:
 
  \code
- #!/bin/bash
+ #! /bin/bash
+ # Always include the shebang line to emphasize that this is bash, not sh.
 
+ # Add the captControl library functions.
  source captain-control.bash
 
  # Set where the general experiment for the data (LANSCE): "nb" is the
@@ -35,8 +39,14 @@
  captain-run-reconstruction
  \endcode
 
- This is run after the captain environment has been setup (i.e. after
- capt-setup).  The library of functions is described here
+ Because this is a POS (plain old script), parameters like the run number
+ can be passed as a command line argument.  This is run after the captain
+ environment has been setup (i.e. after capt-setup).  A good way to do this
+ is to create a special "runArea" package that will depend on
+ captainRelease, or some other reduced set of packages.
+
+ The script above is using the captControl functions to build the filenames
+ and to run the executables.  The library functions are described here
 
    - \subpage filenameGenerationPage : How to build the filenames
      that follow the naming conventions.
@@ -54,7 +64,6 @@
  captain-subrun-number, captain-trigger-type, captain-step-name, and
  captain-processing-version (&c) commands.
 
-
  The standard form for CAPTAIN filenames is as follows:
 
 \code
@@ -71,7 +80,7 @@
 
   In the file name the fields are as follows:
 
-  - ee : is the experiment.  New values should be defined (and documented),
+  - ee : The experiment.  New values should be defined (and documented),
      but they "should" be two characters.
 
      - "mc" : A pure physics study.  MC studies associated with a
@@ -84,7 +93,7 @@
 
      - "xx" : Not set.
 
-  - gg : The data source. 
+  - gg : The data source, or run category.
     - For Monte Carlo:
       - "pg" : Particle Gun
       - "nt" : NEUT Neutrino Monte Carlo
@@ -94,13 +103,13 @@
       - "gr" : Global data
       - "sa" : Stand-alone data with the subdetector set as a sub-field.
 
-  - ppp : is the data or particle type depending on the context.  
-    - For Monte Carlo it's the particle type
-    - For data it's the trigger type
+  - ppp : The run trigger type or particle type depending on the context.  
+    - For data or full simulations, it's the trigger type
       - "spl" : Spill Triggers
       - "cos" : Cosmic Triggers
       - "ped" : Pedestal Triggers
       - "otx" : Any other trigger types.  
+    - For particle gun simulations, it's the particle type
 
   - nnnnnnnn :  The run number. It is set by the captain-run-number command.
     A subrun can also be set using the captain-subrun-number command. If
@@ -120,7 +129,7 @@
       - reco : The reconstruction
       - dst  : The data summary tree
 
-  - jjjjjjjjffff : The hash. This is a alphanumeric code in the
+  - jjjjjjjjffff : The hash value. This is a alphanumeric code in the
     filename and cannot be set by the user.  These are generated using the
     sha1 algorithm, and are unique with a high probability.
     - jjjjjjjj is the job hash. This is unique to the job and is generated
@@ -128,9 +137,12 @@
     - ffff is the file hash.  It is intended to be unique within an
       particular job, but might be repeated in different jobs.
 
-  - ? is the optional comment.  This field may not be present.  It allows
+  - ? : An optional comment.  This field may not be present.  It allows
     the user to specify additional information in the filename. It is set
-    by the captain-comment.
+    by the captain-comment.  It should be divided into fields and
+    sub-fields using "_" and "-" just like the rest of the file name.  It
+    is usually reserved for large scale processing to specify where the
+    files were generated.
 
   - ext : The extension and specifies the type of file.  The default value
     is "root"
