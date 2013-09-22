@@ -1,0 +1,6 @@
+# Extra control definitions for DOXYGEN.
+
+FILE_PATTERNS = captain-* *.dox
+
+FILTER_PATTERNS = *.bash=./doxygen_bash_filter.sh *-uuid=./doxygen_bash_filter.sh
+

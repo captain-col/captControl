@@ -1,0 +1,17 @@
+package captControl
+# This package provides the run control tools used to build captain jobs.
+# The CAPTAIN job control language is "bash", and the scripts are tools to
+# make writing the bash shell scripts easy.
+
+author clark.mcgrew@stonybrook.edu
+manager clark.mcgrew@stonybrook.edu
+
+# Get the policy definitions.  
+use captainPolicy
+
+# Build the documentation.
+document doxygen doxygen -group=documentation ../scripts/*.bash ../doc/*.dox
+
+# Set the location of the control scripts.  
+path_remove PATH "$(CAPTCONTROLROOT)"
+path_prepend PATH "$(CAPTCONTROLROOT)/scripts"

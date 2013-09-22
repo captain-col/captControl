@@ -1,0 +1,141 @@
+// The following documentation will appear on the main page.  This
+// file is essentially the global readme for this library. This is a
+// collection of \mainpage and \page directives
+
+/*! \mainpage The CAPTAIN software control package.
+
+ \section captControl Introduction
+
+ This provides a set of bash functions to make running CAPTAIN jobs a
+ cinch.  It is useful for everyday CAPTAIN work, but is aimed at batch
+ processing.  Functions are provided for standard configuration options,
+ and most operations can be done by calling a single function.  As an
+ example of a typical job to run the reconstruction on a raw data file for
+ run 321, take at LANSCE:
+
+ \code
+ #!/bin/bash
+
+ source captain-control.bash
+
+ # Set where the general experiment for the data (LANSCE): "nb" is the
+ # neutron beam prefix. 
+ captain-experiment nb
+
+ # Set the data source: "gr" says this is a global run.
+ captain-data-source gr
+
+ # Set the trigger type: "spl" says this came from the spill trigger.
+ captain-run-type spl
+
+ # Set the  run number
+ captain-run-number 321
+ 
+ # Specify which program chain to run.
+ captain-run-reconstruction
+ \endcode
+
+ This is run after the captain environment has been setup (i.e. after
+ capt-setup).  The library of functions is described here
+
+   - \subpage filenameGenerationPage : How to build the filenames
+     that follow the naming conventions.
+
+   - \subpage jobControlPage : How to run event loop programs in a
+     standardized way.
+
+   - \subpage messageOutputPage : How to write output to the job
+     log file.
+
+ \section filenameConvention Filename Convention
+
+ Standard CAPTAIN file names are generated using the captain-file command
+ which builds the name based on the arguments to the captain-run-number,
+ captain-subrun-number, captain-trigger-type, captain-step-name, and
+ captain-processing-version (&c) commands.
+
+
+ The standard form for CAPTAIN filenames is as follows:
+
+\code
+  ee_gg_ppp_nnnnnnnnn_vvv_ssss_jjjjjjjjffff_?.ext
+\endcode
+
+  where each field tells you something specific about the job. The fields
+  are filled depending on information provided in the configuration
+  files. The filename is also divided up by three separate delimiters,
+  which cannot therefore be used in fields. These are "." which splits the
+  filename from the extension, "_" the primary field delimiter and "-"
+  the sub-delimiter. The number of characters in each field is recommended,
+  but not fixed.
+
+  In the file name the fields are as follows:
+
+  - ee : is the experiment.  New values should be defined (and documented),
+     but they "should" be two characters.
+
+     - "mc" : A pure physics study.  MC studies associated with a
+              particular setup should use the experiment code for that
+              setup (e.g. MC simulation the LANSCE runs should use "nb")
+
+     - "ts" : A test setup.
+
+     - "nb" : The neutron beam running at LANSCE.
+
+     - "xx" : Not set.
+
+  - gg : The data source. 
+    - For Monte Carlo:
+      - "pg" : Particle Gun
+      - "nt" : NEUT Neutrino Monte Carlo
+      - "gn" : Genie Neutrino Monte Carlo
+      - "cs" : Cosmic Ray Monte Carlo
+    - For Data:
+      - "gr" : Global data
+      - "sa" : Stand-alone data with the subdetector set as a sub-field.
+
+  - ppp : is the data or particle type depending on the context.  
+    - For Monte Carlo it's the particle type
+    - For data it's the trigger type
+      - "spl" : Spill Triggers
+      - "cos" : Cosmic Triggers
+      - "ped" : Pedestal Triggers
+      - "otx" : Any other trigger types.  
+
+  - nnnnnnnn :  The run number. It is set by the captain-run-number command.
+    A subrun can also be set using the captain-subrun-number command. If
+    subrun is set it will appear as a subfield of the run number
+    (rrrrrrrr-sss). The run number is 8 digits long and the subrun 3
+    digits. They will be zero padded and truncated if longer.
+
+  - vvv : The version number. Used to distinguish when the same input data
+    is processed multiple times.  For instance, two reconstructions of the
+    same Monte Carlo.  This is set with the captain-version-number command.
+
+  - ssss : The processing step. It tells the user which step in the
+    processing the file comes from.  The standard "steps" are
+      - g4mc : The detector simulation
+      - elmc : The electronics simulation
+      - cali : The calibrations
+      - reco : The reconstruction
+      - dst  : The data summary tree
+
+  - jjjjjjjjffff : The hash. This is a alphanumeric code in the
+    filename and cannot be set by the user.  These are generated using the
+    sha1 algorithm, and are unique with a high probability.
+    - jjjjjjjj is the job hash. This is unique to the job and is generated
+      from the job information.
+    - ffff is the file hash.  It is intended to be unique within an
+      particular job, but might be repeated in different jobs.
+
+  - ? is the optional comment.  This field may not be present.  It allows
+    the user to specify additional information in the filename. It is set
+    by the captain-comment.
+
+  - ext : The extension and specifies the type of file.  The default value
+    is "root"
+
+Overall the filename is only limited by the posixs standard.  However, a
+filename of less than 80 characters is recommended.
+
+*/

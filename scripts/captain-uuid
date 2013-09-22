@@ -1,0 +1,27 @@
+#!/bin/bash
+## \file captain-uuid
+## 
+## Definition of the captain-uuid command
+ 
+## \section captain-uuid
+## \brief Generate a UUID in a system independent way.
+## 
+## Deal with the possibility that not all systems support the same UUID
+## generation tools.  This works down a list of possible UUID generators
+## until one that works is found.  If none is found, then it "fakes" a uuid.
+## This prefers uuidgen, but if it isn't found tries to use the linux
+## kernel interface.  If that isn't found, then it fails
+
+if [ -x /usr/bin/uuidgen ]; then
+   uuidgen
+   exit 0
+fi
+
+if [ -f /proc/sys/kernel/random/uuid ]; then
+   cat /proc/sys/kernel/random/uuid
+   exit 0
+fi
+
+# Problem: nothing found.
+echo XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+exit 1

@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# This is a very simple example that just generates the file names for
+# several steps of a job and prints them to the standard output.  It
+# also shows how to write log and warning messages.
+
+source captain-control.bash
+
+captain-log This is a very long test message just for the hell of it.  \
+    It is meant to test the line wrapping of the fold in the captain-log \
+    command and just checks  \
+    the formatting. 
+
+captain-warning This is a very long warning message just for the hell of it.  \
+    It is meant to test the line wrapping of the fold in the captain-warning \
+    command and just checks  \
+    the formatting. 
+
+# Set the file name fields.
+captain-experiment nb
+captain-data-source pg
+captain-run-type muon
+captain-run-number 42
+captain-subrun-number 999
+captain-processing-version 99
+captain-processing-comment ____fine_mess_we_are_in_____
+captain-file-extension .bogus.root
+
+# Make a few file names.
+captain-file g4mc
+captain-file elmc
+captain-file cali
+captain-file reco
+captain-file dst
+
