@@ -62,7 +62,7 @@ echo
 
 rm ${captConTmp}
 
-source captain-control-output.bash
+source captain-control-utility.bash
 source captain-control-filenames.bash
 source captain-control-jobs.bash
 
