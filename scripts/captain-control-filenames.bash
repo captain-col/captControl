@@ -1,3 +1,8 @@
+#!/bin/bash
+#
+# This is sourced by the captain-control.bash file.
+#
+
 ## \page filenameGenerationPage Generating standard filenames
 
 ## Functions to generate filenames according to the file naming
@@ -49,10 +54,11 @@ function captain-file {
     fi
 
     # Build the file  hash code
-    local fileHash=$(echo ${CAPTAIN_EXPERIMENT} ${CAPTAIN_DATA_SOURCE} \
-	${CAPTAIN_RUN_TYPE} ${runNumbering} \
-	${CAPTAIN_PROCESSING_COMMENT} ${CAPTAIN_FILE_EXTENSION} \
-	| sha1sum | cut -c 1-4)
+    local fileHash=$(echo ${CAPTAIN_JOB_ID} ${CAPTAIN_EXPERIMENT} \
+	${CAPTAIN_DATA_SOURCE} ${CAPTAIN_RUN_TYPE} \
+	${runNumbering} ${stepName} \
+	${CAPTAIN_JOB_FULL_HASH} ${CAPTAIN_PROCESSING_COMMENT} \
+	${CAPTAIN_FILE_EXTENSION} | captain-hash | cut -c 1-4)
 
     # Format the file name.
     if [ ${#CAPTAIN_PROCESSING_COMMENT} = 0 ]; then
