@@ -1,3 +1,8 @@
+#!/bin/bash
+#
+# This is sourced by the captain-control.bash file.
+#
+
 ## \page jobControlPage Controlling CAPTAIN jobs
 ##
 ## Functions to help run CAPTAIN jobs. 
@@ -171,7 +176,7 @@ function captain-override {
 	captain-error "Must provide a value for the parameter."
     fi
     if [ ${#CAPTAIN_OVERRIDES} = 0 ]; then
-	CAPTAIN_OVERRIDES=$(mktemp)
+	CAPTAIN_OVERRIDES=$(captain-tempfile)
     fi
     echo "< ${1} = ${2} >" >> ${CAPTAIN_OVERRIDES}
 }

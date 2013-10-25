@@ -1,6 +1,78 @@
-## \page messageOutputPage Standard log and error output
+#!/bin/bash
+#
+# This is sourced by the captain-control.bash file.
+#
+
+## \page captainControlUtility Utilities for use in captain-control scripts.
 ##
-## The captain-log, captain-warning and captain-error family of functions.
+## This definds a set of utilities to simplify the captain control
+## scripts.  These include functions to wrap system programs that are
+## not standardized between systems (e.g. mktemp, hostname, and others
+## not defined by POSIX), as well as log, warning and error message
+## utilities.
+
+## \secion systemWrappers System Program Wrappers.
+##
+## The program wrappers provide a set of standard ways to run system
+## programs.  In general, the scripts try to stick to P0SIX, but there
+## are some crucial programs that are not defined.  This tries to work
+## around that.
+
+#######################################################################
+## \subsection captain-system
+## \code
+##   captain-system
+## \endcode
+##
+## Output a string specifying the system type.  On Linux and Darwin
+## this is the output of "uname -s".  The returned strings are:
+##   * "Linux" -- For most linux systems.
+##   * "Darwin" -- For OSX systems (i.e. Macs).
+captain-system () {
+    uname -s
+}
+
+#######################################################################
+## \subsection captain-tempfile
+## \code
+##   captain-tempfile <prefix>
+## \endcode
+## \param
+## 
+## This is a wrapper around the mktemp command.  The mktemp command
+## varies between different systems and is not defined in POSIX, so
+## this fixes that.  If the argument is present, then it's used as a a
+## prefix.  For the purposes of LINUX, it is formed into
+## "prefix.XXXXXXXXX"
+captain-tempfile () {
+    local template="captain.XXXXXXXXXX";
+    if [ ${#1} != 0 ]; then
+	template="${1}.XXXXXXXXXX"
+    fi
+    mktemp ${template}
+}
+
+#######################################################################
+## \subsection captain-hash
+## \code
+##   captain-hash 
+## \endcode
+## \param
+## 
+## This is a wrapper around the sha1sum (or similar) command.  It
+## expects to be used as a pipe with the input comming on stdin, and
+## printing the hash value to stdout.
+captain-hash () {
+    if [ -x /usr/bin/sha1sum ]; then
+	sha1sum -
+	return
+    fi
+    if [ -x /usr/bin/openssl ]; then
+	openssl sha1 | sed 's/.*= *//'
+	return
+    fi
+    echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+}
 
 ## \section messageOutput Message Output
 ##

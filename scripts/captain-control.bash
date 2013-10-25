@@ -18,6 +18,9 @@ if [ "x" = "x${BASH_VERSION}" ]; then
     exit 1
 fi
 
+# Define the utility functions.
+source captain-control-utility.bash
+
 # Define the job identifier, but only if not inheriting one.
 if [ ${#CAPTAIN_JOB_ID} = 0 ]; then
     export CAPTAIN_JOB_ID=$(captain-uuid)
@@ -26,7 +29,7 @@ else
 fi
 
 # Write a job summary to a temporary file
-captConTmp=$(mktemp)
+captConTmp=$(captain-tempfile)
 echo "%   Job UUID:" ${CAPTAIN_JOB_ID} >> ${captConTmp}
 echo "%   CWD:" $(pwd) >> ${captConTmp}
 echo "%   Script:" $0 >> ${captConTmp}
@@ -43,14 +46,16 @@ if [ -x /usr/bin/lsb_release ]; then
 fi
 
 # Write the network names and addresses for this machine
-echo "%   Hostnames:" \
-    $(for i in $(hostname -A); do echo $i " " ; done) >> ${captConTmp}
-echo "%   IP Addresses:" \
-    $(for i in $(hostname -I); do echo $i " " ; done) >> ${captConTmp}
+echo "%   Hostname:" $(hostname -f)
+
+if [ $(captain-system) = "Linux" ]; then
+    echo "%   IP Addresses:" \
+	$(for i in $(hostname -I); do echo $i " " ; done) >> ${captConTmp}
+fi
 
 # Generate the job hash
-CAPTAIN_JOB_FULL_HASH=$(cat ${captConTmp} | sha1sum | cut -c 1-40)
-CAPTAIN_JOB_HASH=$(echo ${CAPTAIN_JOB_FULL_HASH} | cut -c 1-6)
+export CAPTAIN_JOB_FULL_HASH=$(cat ${captConTmp} | captain-hash | cut -c 1-40)
+export CAPTAIN_JOB_HASH=$(echo ${CAPTAIN_JOB_FULL_HASH} | cut -c 1-6)
 
 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 echo "% Starting job at" $(date) 
@@ -62,7 +67,7 @@ echo
 
 rm ${captConTmp}
 
-source captain-control-utility.bash
+# Define the main "user" functions.
 source captain-control-filenames.bash
 source captain-control-jobs.bash
 
