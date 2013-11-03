@@ -46,11 +46,9 @@ if [ -x /usr/bin/lsb_release ]; then
 fi
 
 # Write the network names and addresses for this machine
-echo "%   Hostname:" $(hostname -f)
-
+echo "%   Hostname:" $(hostname -f) >> ${captConTmp}
 if [ $(captain-system) = "Linux" ]; then
-    echo "%   IP Addresses:" \
-	$(for i in $(hostname -I); do echo $i " " ; done) >> ${captConTmp}
+    echo "%   IP Addresses:" $(hostname -i) >> ${captConTmp}
 fi
 
 # Generate the job hash

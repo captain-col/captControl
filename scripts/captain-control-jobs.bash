@@ -23,7 +23,6 @@
 
 function captain-process-detsim-macro {
     local input=${1}
-    captain-file-extension .root
     local output=$(captain-file g4mc)
     DETSIM.exe -o $(basename ${output} .root) ${input}
 }

@@ -32,6 +32,13 @@ function captain-file {
     if [ ${#stepName} = 0 ]; then
 	captain-error "The step name must be provided to captain-file"
     fi
+    shift
+
+    # Check if there is an extension provided
+    local fileExtension=$1
+    if [ ${#fileExtension} = 0 ]; then
+	fileExtension="root"
+    fi
 
     # Check that all the fields are defined.
     captain-experiment >> /dev/null
@@ -40,7 +47,6 @@ function captain-file {
     captain-run-number >> /dev/null
     captain-subrun-number >> /dev/null
     captain-processing-version >> /dev/null
-    captain-file-extension >> /dev/null
 
     # Build the run number field
     local runNumbering=""
@@ -58,21 +64,21 @@ function captain-file {
 	${CAPTAIN_DATA_SOURCE} ${CAPTAIN_RUN_TYPE} \
 	${runNumbering} ${stepName} \
 	${CAPTAIN_JOB_FULL_HASH} ${CAPTAIN_PROCESSING_COMMENT} \
-	${CAPTAIN_FILE_EXTENSION} | captain-hash | cut -c 1-4)
+	${fileExtension} | captain-hash | cut -c 1-4)
 
     # Format the file name.
     if [ ${#CAPTAIN_PROCESSING_COMMENT} = 0 ]; then
 	printf "%s_%s_%s_%s_%s_%s%s.%s\n" \
 	    "${CAPTAIN_EXPERIMENT}" "${CAPTAIN_DATA_SOURCE}" \
 	    "${CAPTAIN_RUN_TYPE}" "${runNumbering}" ${stepName} \
-	    "${CAPTAIN_JOB_HASH}" "${fileHash}" "${CAPTAIN_FILE_EXTENSION}" 
+	    "${CAPTAIN_JOB_HASH}" "${fileHash}" "${fileExtension}" 
 	return
     fi
     printf "%s_%s_%s_%s_%s_%s%s_%s.%s\n" \
 	"${CAPTAIN_EXPERIMENT}" "${CAPTAIN_DATA_SOURCE}" "${CAPTAIN_RUN_TYPE}" \
 	"${runNumbering}" ${stepName} \
 	"${CAPTAIN_JOB_HASH}" "${fileHash}" \
-	"${CAPTAIN_PROCESSING_COMMENT}" "${CAPTAIN_FILE_EXTENSION}" 
+	"${CAPTAIN_PROCESSING_COMMENT}" "${fileExtension}" 
 }
 
 ## \subsection captain-experiment
@@ -258,29 +264,29 @@ function captain-processing-comment {
     echo ${CAPTAIN_PROCESSING_COMMENT}
 }
 
-## \subsection captain-file-extension
-## \code
-## captain-file-extension name
-## \endcode
-## or
-## \code
-## captain-file-extension
-## \endcode
-##
-## This sets the file extension that will be used in the file name.
-## The default value is ".root".  A "." at the beginning of the
-## extension is optional.  If it is missing, then it will be added to
-## the extension.  The extension can contain interior "." to make a
-## more complex extension.
-export CAPTAIN_FILE_EXTENSION
-function captain-file-extension {
-    if [ ${#1} != 0 ]; then 
-	# Make sure the first "." is truncated.
-	CAPTAIN_FILE_EXTENSION=$(echo $1 | sed -e 's/^\.//')
-	return
-    fi
-    if [ ${#CAPTAIN_FILE_EXTENSION} = 0 ]; then
-	CAPTAIN_FILE_EXTENSION="root";
-    fi
-    echo ${CAPTAIN_FILE_EXTENSION}
-}
+# ## \subsection captain-file-extension
+# ## \code
+# ## captain-file-extension name
+# ## \endcode
+# ## or
+# ## \code
+# ## captain-file-extension
+# ## \endcode
+# ##
+# ## This sets the file extension that will be used in the file name.
+# ## The default value is ".root".  A "." at the beginning of the
+# ## extension is optional.  If it is missing, then it will be added to
+# ## the extension.  The extension can contain interior "." to make a
+# ## more complex extension.
+# export CAPTAIN_FILE_EXTENSION
+# function captain-file-extension {
+#     if [ ${#1} != 0 ]; then 
+# 	# Make sure the first "." is truncated.
+# 	CAPTAIN_FILE_EXTENSION=$(echo $1 | sed -e 's/^\.//')
+# 	return
+#     fi
+#     if [ ${#CAPTAIN_FILE_EXTENSION} = 0 ]; then
+# 	CAPTAIN_FILE_EXTENSION="root";
+#     fi
+#     echo ${CAPTAIN_FILE_EXTENSION}
+# }
