@@ -11,19 +11,105 @@
 
 ## These functions are for running the standard event processing chain.
 
+## \subsection captain-run-genie-simple
+##
+## \code
+## captain-run-genie-simple events flux neutrino
+## \endcode
+##
+## This runs the GENIE interaction MC to product ghep (in the native
+## GENIE ghep format) and gnmc (in the rootracker) files.  It takes 3
+## arguments: the first is the number of events to generate, the
+## second is the flux to use, and the third is the pdg code for the
+## neutrino type.  The format of the flux is documented in
+## captainGENIE.  It is name of a file containing a root histogram
+## ("file.root,hist_name"), the name of a text file with two columns
+## (energy,flux), or a TF1 function string
+## (e.g. "x*x*exp(-(x/5.0)**2)")
+
+function captain-run-genie-simple {
+    local events=${1}
+    local flux=${2}
+    local neutrino=${3}
+
+    if [ ${#1} = 0 ]; then
+	captain-error Number of events must be provided as first argument.
+	return 1;
+    fi
+
+    if [ ${#2} = 0 ]; then
+	captain-error Flux must be provided as second argument.
+	return 1;
+    fi
+
+    if [ ${#3} = 0 ]; then
+	captain-error Neutrino PDG MC number must be provided as third argument.
+	return 1;
+    fi
+
+    local prefix=$(basename $(captain-file "ghep") ".root")
+    local filename="${prefix}.$(captain-run-number).ghep.root"
+    local loglevel=${GENIE}/config/Messenger_laconic.xml
+
+    gevgen_capt.exe -r $(captain-run-number) \
+	-o ${prefix} \
+	-n ${events} \
+	-e 0.001,15.0 -p ${neutrino} -f ${flux} \
+	--message-thresholds ${loglevel}
+    gntpc -f rootracker -i ${filename} -o $(captain-file "gnmc") \
+	--message-thresholds ${loglevel}
+    
+    mv ${filename} $(captain-file "ghep")
+    
+    # Write a GEANT4 macro file to process the output.
+    cat >> $(captain-file "g4in" "mac") <<EOF
+/dsim/control baseline 1.0
+/dsim/update
+
+/generator/kinematics/rooTracker/input $(captain-file "gnmc")
+/generator/kinematics/set rooTracker
+
+# Have exactly one interaction per event.
+/generator/count/fixed/number 1
+/generator/count/set fixed
+
+# Choose the position based on the density (and only in the drift volume).
+/generator/position/density/volume Drift
+/generator/position/set density
+
+/generator/add
+
+/run/beamOn ${events}
+EOF
+
+}
+
 ## \subsection captain-process-detsim-macro
 ##
 ## \code
-## captain-process-detsim-macro macro-file.mac
+## captain-process-detsim-macro [macro-file.mac]
 ## \endcode
-
-## This takes a detsim macro file (ending with the extension ".mac") and
-## runs the DETSIM.exe to produce a g4mc file. The output filename is
-## controlled using the usual \ref filenameGeneration routines.
-
+##
+## This takes a detsim macro file (ending with the extension ".mac")
+## and runs the DETSIM.exe to produce a g4mc file. The output filename
+## is controlled using the usual \ref filenameGeneration routines.  If
+## no input macro argument is provided, then this will look for a file
+## from the step "g4in" with an extension "mac" (specifically
+## "captain-file g4in mac").
 function captain-process-detsim-macro {
     local input=${1}
     local output=$(captain-file g4mc)
+    if [ ${#1} = 0 ]; then
+	if [ -f $(captain-file g4in mac) ]; then
+	    input=$(captain-file g4in mac)
+	else
+	    return 1
+	fi
+    fi
+    if [ ! -f ${input} ]; then
+	captain-error "No input macro file for detsim"
+	return 1
+    fi
     DETSIM.exe -o $(basename ${output} .root) ${input}
 }
 
@@ -38,7 +124,9 @@ function captain-process-detsim-macro {
 ## routines. 
 function captain-run-electronics-simulation {
     if [ ! -f $(captain-file g4mc) ]; then
-	return 1
+	if captain-process-detsim-macro; then
+	    captain-log "Processed " $(captain-file g4in mac)
+	fi
     fi
     captain-run-standard-event-loop ELECSIM.exe g4mc elmc
 }
