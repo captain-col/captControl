@@ -30,6 +30,9 @@ fi
 
 # Write a job summary to a temporary file
 captConTmp=$(captain-tempfile)
+
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"  >> ${captConTmp}
+echo "% Starting job at" $(date) >> ${captConTmp}
 echo "%   Job UUID:" ${CAPTAIN_JOB_ID} >> ${captConTmp}
 echo "%   CWD:" $(pwd) >> ${captConTmp}
 echo "%   Script:" $0 >> ${captConTmp}
@@ -55,19 +58,21 @@ fi
 export CAPTAIN_JOB_FULL_HASH=$(cat ${captConTmp} | captain-hash | cut -c 1-40)
 export CAPTAIN_JOB_HASH=$(echo ${CAPTAIN_JOB_FULL_HASH} | cut -c 1-6)
 
-echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-echo "% Starting job at" $(date) 
-cat ${captConTmp}
-echo "%   Job short hash code:" ${CAPTAIN_JOB_HASH} 
-echo "%   Job full hash code: " ${CAPTAIN_JOB_FULL_HASH} 
-echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-echo
+# Set the log file.
+CAPTAIN_JOB_LOG=captControl_${CAPTAIN_JOB_FULL_HASH}.log
 
-rm ${captConTmp}
+echo "%   Job short hash code:" ${CAPTAIN_JOB_HASH}  >> ${captConTmp}
+echo "%   Job full hash code: " ${CAPTAIN_JOB_FULL_HASH}   >> ${captConTmp}
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"  >> ${captConTmp}
+echo
 
 # Define the main "user" functions.
 source captain-control-filenames.bash
 source captain-control-jobs.bash
+
+cat ${captConTmp} | captain-tee
+
+rm ${captConTmp}
 
 # An internal function used to implement the cleanup from a job.
 function captain-control-cleanup {

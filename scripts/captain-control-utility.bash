@@ -18,6 +18,26 @@
 ## are some crucial programs that are not defined.  This tries to work
 ## around that.
 
+
+#######################################################################
+## \subsection captain-tee
+## \code 
+##   captain-tee
+## \endcode
+##
+##
+## Copy the standard input to the job log file and print it to the
+## standard output.
+export CAPTAIN_JOB_LOG=""
+captain-tee () {
+    if [ ${#CAPTAIN_JOB_LOG} != 0 ]; then
+	tee -a ${CAPTAIN_JOB_LOG}
+    else
+	exit 1
+	cat
+    fi
+}
+
 #######################################################################
 ## \subsection captain-system
 ## \code
@@ -96,7 +116,7 @@ captain-hash () {
 function captain-log {
     local spacer=""
     echo $* | fold -s -w 52 | while read line; do
-	echo "%" $(date +"%y-%m-%d %T") "--$spacer $line"
+	echo "%" $(date +"%y-%m-%d %T") "--$spacer $line" | captain-tee
 	spacer="  "
     done
 }
@@ -115,18 +135,23 @@ function captain-log {
 ##
 function captain-warning {
     local frame=1
-    echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" >&2
+    echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+	|& captain-tee >&2
     local spacer=""
-    echo "%% WARNING: Warning message at $(date +"%y-%m-%d %T")"
+    echo "%% WARNING: Warning message at $(date +"%y-%m-%d %T")" \
+	|& captain-tee >&2
     echo $* | fold -s -w 65 | while read line; do
-	echo "%% WARNING:${spacer} ${line}" >&2
+	echo "%% WARNING:${spacer} ${line}" \
+	    |& captain-tee >&2
 	spacer="  "
     done
     while caller $frame >> /dev/null; do
-	echo "%% WARNING: " $(printf "line %s (%s) in %s" $(caller $frame)) >&2
+	echo "%% WARNING: " $(printf "line %s (%s) in %s" $(caller $frame)) \
+	    |& captain-tee >&2
 	((++frame))
     done
-    echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" >&2
+    echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+	|& captain-tee >&2
     return
 }
 
@@ -144,16 +169,21 @@ function captain-warning {
 ##
 function captain-error {
     local frame=1
-    echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" >&2
-    echo "%% ERROR: Error message at $(date +"%y-%m-%d %T")"
+    echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+	|& captain-tee >&2
+    echo "%% ERROR: Error message at $(date +"%y-%m-%d %T")" \
+	|& captain-tee >&2
     echo $* | fold -s -w 65 | while read line; do
-	echo "%% ERROR:${spacer} ${line}" >&2
+	echo "%% ERROR:${spacer} ${line}" \
+	    |& captain-tee >&2
 	spacer="  "
     done
     while caller $frame >> /dev/null; do
-	echo "%% ERROR: " $(printf "line %s (%s) in %s" $(caller $frame)) >&2
+	echo "%% ERROR: " $(printf "line %s (%s) in %s" $(caller $frame)) \
+	    |& captain-tee >&2
 	((++frame))
     done
-    echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" >&2
+    echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+	|& captain-tee >&2
     exit 1
 }

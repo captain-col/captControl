@@ -55,9 +55,9 @@ function captain-run-genie-simple {
 	-o ${prefix} \
 	-n ${events} \
 	-e 0.001,15.0 -p ${neutrino} -f ${flux} \
-	--message-thresholds ${loglevel}
+	--message-thresholds ${loglevel} |& captain-tee
     gntpc -f rootracker -i ${filename} -o $(captain-file "gnmc") \
-	--message-thresholds ${loglevel}
+	--message-thresholds ${loglevel} |& captain-tee
     
     mv ${filename} $(captain-file "ghep")
     
@@ -110,7 +110,7 @@ function captain-process-detsim-macro {
 	captain-error "No input macro file for detsim"
 	return 1
     fi
-    DETSIM.exe -o $(basename ${output} .root) ${input}
+    DETSIM.exe -o $(basename ${output} .root) ${input} |& captain-tee
 }
 
 ## \subsection captain-run-electronics-simulation
@@ -242,7 +242,7 @@ function captain-run-standard-event-loop {
     fi
     ${exeFile} ${CAPTAIN_EVENT_LOOP_OPTIONS} \
 	-o ${outputFile} \
-	${inputFile}
+	${inputFile} |& captain-tee
 }
 
 ## \subsection captain-override
