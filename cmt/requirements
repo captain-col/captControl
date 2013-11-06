@@ -2,6 +2,11 @@ package captControl
 # This package provides the run control tools used to build captain jobs.
 # The CAPTAIN job control language is "bash", and the scripts are tools to
 # make writing the bash shell scripts easy.
+#
+# Notice that this package does not depend on any of the packages
+# containing executables.  This allows the package to be used without
+# creating circular dependencies.  The dependencies of this package should be
+# limited to captainPolicy.
 
 author clark.mcgrew@stonybrook.edu
 manager clark.mcgrew@stonybrook.edu
