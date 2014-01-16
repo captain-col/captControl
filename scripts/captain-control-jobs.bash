@@ -54,9 +54,15 @@ function captain-run-genie-simple {
     gevgen_capt.exe -r $(captain-run-number) \
 	-o ${prefix} \
 	-n ${events} \
-	-e 0.001,15.0 -p ${neutrino} -f ${flux} \
+	-e 0.001,15.0 \
+        -p ${neutrino} \
+        -f ${flux} \
+        --seed 0 \
+        --event-record-print-level 0 \
 	--message-thresholds ${loglevel} |& captain-tee
-    gntpc -f rootracker -i ${filename} -o $(captain-file "gnmc") \
+    gntpc -f rootracker \
+        -i ${filename} \
+        -o $(captain-file "gnmc") \
 	--message-thresholds ${loglevel} |& captain-tee
     
     mv ${filename} $(captain-file "ghep")
