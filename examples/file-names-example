@@ -24,7 +24,6 @@ captain-run-number 42
 captain-subrun-number 999
 captain-processing-version 99
 captain-processing-comment ____fine_mess_we_are_in_____
-captain-file-extension .bogus.root
 
 # Make a few file names.
 captain-file g4mc
@@ -32,4 +31,7 @@ captain-file elmc
 captain-file cali
 captain-file reco
 captain-file dst
+
+# Override the filename.
+captain-file an_override.file
 

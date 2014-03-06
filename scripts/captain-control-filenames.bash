@@ -34,6 +34,14 @@ function captain-file {
     fi
     shift
 
+    # Check if the stepName is actually a file name override.  The
+    # file name is overridden when the step name contains a
+    # "prefex.suffix" pattern.
+    if [[ ${stepName} == *.* ]]; then
+	echo ${stepName}
+	return
+    fi
+
     # Check if there is an extension provided
     local fileExtension=$1
     if [ ${#fileExtension} = 0 ]; then
