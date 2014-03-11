@@ -247,6 +247,20 @@ function captain-processing-version {
     echo ${CAPTAIN_PROCESSING_VERSION}
 }
 
+## \subsection captain-increment-processing-version
+## \code
+## captain-increment-processing-version
+## \endcode
+##
+## This increments the process version that will be used in the file
+## name.  The run number is zero padded to be 3 digits.
+function captain-increment-processing-version {
+    if [ ${#CAPTAIN_PROCESSING_VERSION} = 0 ]; then
+	CAPTAIN_PROCESSING_VERSION=0;
+    fi
+    $((++CAPTAIN_PROCESSING_VERSION))
+}
+
 ## \subsection captain-processing-comment
 ## \code
 ## captain-processing-comment name
@@ -267,8 +281,32 @@ function captain-processing-comment {
 	return
     fi
     if [ ${#CAPTAIN_PROCESSING_COMMENT} = 0 ]; then
-	CAPTAIN_PROCESSING_COMMENT=0;
+	CAPTAIN_PROCESSING_COMMENT=""
     fi
     echo ${CAPTAIN_PROCESSING_COMMENT}
 }
 
+## \subsection captain-parse-filename
+## \code
+## captain-parse-filename <name> [extension]
+## \endcode
+##
+## Take a filename that has been constructed according to the captain
+## file naming standard and determine the different field values.  The
+## field values are saved for later use in a script.
+function captain-parse-filename {
+    if [ ${#1} = 0 ]; then 
+	return
+    fi
+    local fileName=$1
+    if [ ${#2} != 0 ]; then
+	fileName=$(basename $1 $2)
+    fi
+    local parsedArray=($(echo ${fileName} | tr "_" "\n" ))
+    CAPTAIN_EXPERIMENT=${parsedArray[0]}
+    CAPTAIN_DATA_SOURCE=${parsedArray[1]}
+    CAPTAIN_RUN_TYPE=${parsedArray[2]}
+    CAPTAIN_RUN_NUMBER=${parsedArray[3]}
+    CAPTAIN_PROCESSING_VERSION=${parsedArray[4]}
+    CAPTAIN_PROCESSING_COMMENT=${parsedArray[7]}
+}

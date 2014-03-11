@@ -122,46 +122,87 @@ function captain-process-detsim-macro {
 ## \subsection captain-run-electronics-simulation
 ##
 ## \code
-## captain-run-electronics-simulation
+## captain-run-electronics-simulation [detsim-file.root]
 ## \endcode
 ## 
 ## Process a file from the g4mc step and produce an "elmc" file.  The
 ## filenames are controlled using the usual \ref filenameGeneration
-## routines. 
+## routines.  Normally, an input file name is built using the standard
+## file name routines so the argument "detsim-file.root" won't be
+## provided, however, if a non-standard input file needs to be
+## processed, the filename can be given as the first argument.  If an
+## input file is provided, then the output file name will be
+## constructed using the usual \ref filenameGeneration routines. 
+## For example,
+##
+## \code
+## captain-experiment nb
+## captain-data-source pg
+## captain-run-type neutron
+## captain-run-number 42
+## captain-processing-comment test
+##
+## captain-run-electronics-simulation detsim-file.root
+## captain-run-reconstruction
+## \endcode
+##
+## will use the previously generated detsim-file.root and run the
+## electronics simulation to produce a standard output file which is
+## then process through the calibration and reconstruction.
+##
 function captain-run-electronics-simulation {
-    if [ ! -f $(captain-file g4mc) ]; then
+    local input=g4mc
+
+    if [ ${#1} != 0 ]; then
+	# A file was provided as an argument.
+	if [ ! -f ${1} ]; then
+	    captain-error "Input file" $1 " does not exist"
+	    exit 1
+	fi
+	input=${1}
+	shift
+    elif [ ! -f $(captain-file g4mc) ]; then
 	if captain-process-detsim-macro; then
 	    captain-log "Processed " $(captain-file g4in mac)
 	fi
     fi
-    captain-run-standard-event-loop ELECSIM.exe g4mc elmc
+    captain-run-standard-event-loop ELECSIM.exe ${input} elmc
 }
-
+	    
 ## \subsection captain-run-calibration
 ##
 ## \code
-## captain-run-calibration
+## captain-run-calibration [raw-file.root]
 ## \endcode
 ## 
 
 ## Process a file from the raw data or electronics simulation step and
-## product a "cali" file.  The filenames are controlled using the usual
-## \ref filenameGeneration routines.  For MC, this expects an "elmc" file,
-## but if it's missing and it finds a "g4mc" file, it will run the
-## electronics simulation using captain-run-electronnics-simulation.  It
-## will also look to see if it can find the correct uncalibrated data file
-## (i.e. a "digit file" with a step name of "digt").
-
-function captain-run-calibration {
+## product a "cali" file.  The filenames are controlled using the
+## usual \ref filenameGeneration routines.  For MC, this expects an
+## "elmc" file, but if it's missing and it finds a "g4mc" file, it
+## will run the electronics simulation using
+## captain-run-electronnics-simulation.  It will also look to see if
+## it can find the correct uncalibrated data file (i.e. a "digit file"
+## with a step name of "digt").  Normally, an input file name is built
+## using the standard file name routines so the argument
+## "raw-file.root" won't be provided, however, if a non-standard
+## input file needs to be processed, the filename can be given as the
+## first argument.  If an input file is provided, then the output file
+## name will be constructed using the usual \ref filenameGeneration
+## routines.
+	    function captain-run-calibration {
     local input
 
     # Check to see if we can find the input file.
-    if [ -f $(captain-file digt) ]; then
-	input=unpk
+    if [ ${#1} != 0 ]; then
+	input=${1}
+	shift
+    elif [ -f $(captain-file digt) ]; then
+	input=digt
     elif [ -f $(captain-file elmc) ]; then
 	input=elmc
     elif captain-run-digit-unpacker; then
-	input=unpk
+	input=digt
     elif captain-run-electronics-simulation; then
 	input=elmc
     else
@@ -172,6 +213,7 @@ function captain-run-calibration {
 
     # Run the event loop in the standard way.
     captain-run-standard-event-loop CLUSTERCALIB.exe ${input} cali
+
 }
 
 # This is a dummy routine for now...
@@ -182,22 +224,32 @@ function captain-run-digit-unpacker {
 ## \subsection captain-run-reconstruction
 ##
 ## \code
-## captain-run-reconstruction
+## captain-run-reconstruction [cali-file.root]
 ## \endcode
 ## 
 
-## Process a file from the calibration step and
-## product a "reco" file.  The filenames are controlled using the usual
-## \ref filenameGeneration routines.  If this can't find a "cali" file,
+## Process a file from the calibration step and product a "reco" file.
+## The filenames are controlled using the usual \ref
+## filenameGeneration routines.  If this can't find a "cali" file,
 ## then it will automatically run the calibration by calling
-## captain-run-calibration. 
-
+## captain-run-calibration.  Normally, an input file name is built
+## using the standard file name routines so the argument
+## "cali-file.root" won't be provided, however, if a non-standard input
+## file needs to be processed, the filename can be given as the first
+## argument.  If an input file is provided, then the output file name
+## will be constructed using the usual \ref filenameGeneration
+## routines.
 
 function captain-run-reconstruction {
-    if [ ! -f $(captain-file cali) ]; then
+    local input
+
+    if [ ${#1} != 0 ]; then
+	input=${1}
+	shift
+    elif [ ! -f $(captain-file cali) ]; then
 	captain-run-calibration
     fi 
-    captain-run-standard-event-loop CAPTRECON.exe cali reco
+    captain-run-standard-event-loop CAPTRECON.exe ${input} reco
 }
 
 
@@ -238,6 +290,10 @@ function captain-run-standard-event-loop {
     captain-log "Options: " ${CAPTAIN_EVENT_LOOP_OPTIONS}
     captain-log "Input: " ${inputFile}
     captain-log "Output: " ${outputFile}
+    if [ ! -f ${inputFile} ]; then
+	captain-error "Input file is missing"
+	exit 1
+    fi
     if [ ${#CAPTAIN_OVERRIDES} != 0 ]; then
 	captain-log "Override file: " ${CAPTAIN_OVERRIDES}
 	cat ${CAPTAIN_OVERRIDES}

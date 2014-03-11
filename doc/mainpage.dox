@@ -32,7 +32,7 @@
  # Set the trigger type: "spl" says this came from the spill trigger.
  captain-run-type spl
 
- # Set the  run number
+ # Set the run number
  captain-run-number 321
  
  # Specify which program chain to run.
@@ -54,8 +54,71 @@
    - \subpage jobControlPage : How to run event loop programs in a
      standardized way.
 
-   - \subpage messageOutputPage : How to write output to the job
-     log file.
+   - \subpage captainControlUtility : How to write output to the job
+     log file, and other utility functions.
+
+ \subsection An example using GEANT4 macros
+
+ Another common type of job is to process a particle gun generated using a
+ GEANT4 macro file.  The macro files are described in more detail inside the
+ detector simulation, but assuming that you've written one it is processed
+ as follows.
+
+ \code
+ #! /bin/bash
+ # Always include the shebang line to emphasize that this is bash, not sh.
+
+ # Add the captControl library functions.
+ source captain-control.bash
+
+ # Set where the general experiment for the data (LANSCE): "nb" is the
+ # neutron beam prefix. 
+ captain-experiment nb
+
+ # Set the data source: "pg" says this is a global run.
+ captain-data-source pg
+
+ # Set the trigger type: "spl" says this simulates a spill trigger.
+ captain-run-type spl
+
+ # Set the run number
+ captain-run-number 321
+ 
+ # Run the detector simulation.
+ captain-process-detsim-macro your-macro-here.mac
+
+ # Run the rest of the processing chain.
+ captain-run-reconstruction
+ \endcode
+
+ This will produce output files with a standarized names. 
+
+ \subsection An example reprocessing an existing file
+
+ This example shows how to reprocess an existing file.  In this example,
+ the input file is coming from the electronics simulation stage.  The
+ output file name fields are taken from the input file.
+
+ \code
+ #! /bin/bash
+ # Always include the shebang line to emphasize that this is bash, not sh.
+
+ # Add the captControl library functions.
+ source captain-control.bash
+
+ # Set the default filename parameters from the input file.
+ captain-parse-filename mc_pg_muon-600_000000_000_elmc_997c378dab.root
+ 
+ # Increment the processing version for the output files.
+ captain-increment-processing-version 
+
+ # Run the rest of the processing chain.
+ captain-run-calibration mc_pg_muon-600_000000_000_elmc_997c378dab.root
+ captain-run-reconstruction
+ \endcode
+
+ The output filename parameters can be overridden using the normal filename
+ control functions after the captain-parse-file function has been run.  
 
  \section filenameConvention Filename Convention
 
@@ -147,7 +210,7 @@
   - ext : The extension and specifies the type of file.  The default value
     is "root"
 
-Overall the filename is only limited by the posixs standard.  However, a
+Overall the filename is only limited by the posix standard.  However, a
 filename of less than 80 characters is recommended.
 
 */
