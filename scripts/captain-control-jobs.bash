@@ -22,7 +22,7 @@
 ## arguments: the first is the number of events to generate, the
 ## second is the flux to use, and the third is the pdg code for the
 ## neutrino type.  The format of the flux is documented in
-## captainGENIE.  It is name of a file containing a root histogram
+## genericGENIE.cxx.  It is name of a file containing a root histogram
 ## ("file.root,hist_name"), the name of a text file with two columns
 ## (energy,flux), or a TF1 function string
 ## (e.g. "x*x*exp(-(x/5.0)**2)")
@@ -51,7 +51,7 @@ function captain-run-genie-simple {
     local filename="${prefix}.$(captain-run-number).ghep.root"
     local loglevel=${GENIE}/config/Messenger_laconic.xml
 
-    gevgen_capt.exe -r $(captain-run-number) \
+    gevgen_generic.exe -r $(captain-run-number) \
 	-o ${prefix} \
 	-n ${events} \
 	-e 0.001,15.0 \
@@ -190,7 +190,7 @@ function captain-run-electronics-simulation {
 ## first argument.  If an input file is provided, then the output file
 ## name will be constructed using the usual \ref filenameGeneration
 ## routines.
-	    function captain-run-calibration {
+function captain-run-calibration {
     local input
 
     # Check to see if we can find the input file.
@@ -241,7 +241,7 @@ function captain-run-digit-unpacker {
 ## routines.
 
 function captain-run-reconstruction {
-    local input
+    local input=cali
 
     if [ ${#1} != 0 ]; then
 	input=${1}
