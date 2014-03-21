@@ -19,18 +19,33 @@
 ##
 ## This runs the GENIE interaction MC to product ghep (in the native
 ## GENIE ghep format) and gnmc (in the rootracker) files.  It takes 3
-## arguments: the first is the number of events to generate, the
-## second is the flux to use, and the third is the pdg code for the
-## neutrino type.  The format of the flux is documented in
-## genericGENIE.cxx.  It is name of a file containing a root histogram
-## ("file.root,hist_name"), the name of a text file with two columns
-## (energy,flux), or a TF1 function string
-## (e.g. "x*x*exp(-(x/5.0)**2)")
-
+## arguments: the first is the number of events to generate and the
+## second is the flux to use neutrino type.  The format of the flux is
+## documented in captainGENIE.cxx.  
+##
+## It can be any of:
+##   -- An energy in GeV.  This can't be combined with other flux
+##      descriptions. eg `mono,pdg,energy' 
+##   -- A function (x in GeV):
+##      eg `func,pdg,x*x+4*exp(-x),emin,emax' 
+##   -- A 1-D ROOT histogram (binned in GeV):
+##      The general syntax is `hist,pdg,file.root,hist_name'
+##   -- A text file with columns of energy (in GeV) and flux:
+##      The general syntax is `text,pdg,file.txt,Ecol,Fcol' with
+##      ECol giving the column with the energy Fcol giving the column
+##      with the flux.  The colunms are counted from 0.
+##
+## If multiple fluxes are specified, then they are separated by a ':',
+## `hist,14,file.root,numu:hist,-14,file.root,numubar' would read
+## the muon neutrino (pdg 14) flux from the histogram named numu in
+## file.root, and the muon anti-neutrino (pdg -14) flux from the
+## histogram named numubar in file.root.  This clunky interface is
+## forced by the GENIE command line argument parser which can't handle
+## multiple copies of an option.
+##
 function captain-run-genie-simple {
     local events=${1}
     local flux=${2}
-    local neutrino=${3}
 
     if [ ${#1} = 0 ]; then
 	captain-error Number of events must be provided as first argument.
@@ -42,28 +57,15 @@ function captain-run-genie-simple {
 	return 1;
     fi
 
-    if [ ${#3} = 0 ]; then
-	captain-error Neutrino PDG MC number must be provided as third argument.
-	return 1;
-    fi
-
     local prefix=$(basename $(captain-file "ghep") ".root")
     local filename="${prefix}.$(captain-run-number).ghep.root"
-    local loglevel=${GENIE}/config/Messenger_laconic.xml
 
     gevgen_generic.exe -r $(captain-run-number) \
-	-o ${prefix} \
 	-n ${events} \
-	-e 0.001,15.0 \
-        -p ${neutrino} \
-        -f ${flux} \
-        --seed 0 \
-        --event-record-print-level 0 \
-	--message-thresholds ${loglevel} |& captain-tee
+        --seed 0  |& captain-tee
     gntpc -f rootracker \
         -i ${filename} \
-        -o $(captain-file "gnmc") \
-	--message-thresholds ${loglevel} |& captain-tee
+        -o $(captain-file "gnmc") |& captain-tee
     
     mv ${filename} $(captain-file "ghep")
     
