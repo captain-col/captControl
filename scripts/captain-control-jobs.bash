@@ -60,9 +60,9 @@ function captain-run-genie-simple {
     local prefix=$(basename $(captain-file "ghep") ".root")
     local filename="${prefix}.$(captain-run-number).ghep.root"
 
-    gevgen_generic.exe -r $(captain-run-number) \
+    gevgen_capt.exe -r $(captain-run-number) \
 	-n ${events} \
-        --seed 0  |& captain-tee
+	-f ${flux} |& captain-tee
     gntpc -f rootracker \
         -i ${filename} \
         -o $(captain-file "gnmc") |& captain-tee
