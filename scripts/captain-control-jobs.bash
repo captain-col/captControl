@@ -14,23 +14,25 @@
 ## \subsection captain-run-genie-simple
 ##
 ## \code
-## captain-run-genie-simple events flux neutrino
+## captain-run-genie-simple events flux [control-macro]
 ## \endcode
 ##
 ## This runs the GENIE interaction MC to product ghep (in the native
-## GENIE ghep format) and gnmc (in the rootracker) files.  It takes 3
-## arguments: the first is the number of events to generate and the
-## second is the flux to use neutrino type.  The format of the flux is
-## documented in captainGENIE.cxx.  
+## GENIE ghep format) and gnmc (in the rootracker) files.  It has two
+## required arguments and a third optional argument.  The first
+## argument is the number of events to generate and the second
+## argument is the flux description.  The format of the flux is
+## documented in captainGENIE.cxx.
 ##
 ## It can be any of:
-##   -- An energy in GeV.  This can't be combined with other flux
+##
+##   - An energy in GeV.  This can't be combined with other flux
 ##      descriptions. eg `mono,pdg,energy' 
-##   -- A function (x in GeV):
+##   - A function (x in GeV):
 ##      eg `func,pdg,x*x+4*exp(-x),emin,emax' 
-##   -- A 1-D ROOT histogram (binned in GeV):
+##   - A 1-D ROOT histogram (binned in GeV):
 ##      The general syntax is `hist,pdg,file.root,hist_name'
-##   -- A text file with columns of energy (in GeV) and flux:
+##   - A text file with columns of energy (in GeV) and flux:
 ##      The general syntax is `text,pdg,file.txt,Ecol,Fcol' with
 ##      ECol giving the column with the energy Fcol giving the column
 ##      with the flux.  The colunms are counted from 0.
@@ -42,6 +44,10 @@
 ## histogram named numubar in file.root.  This clunky interface is
 ## forced by the GENIE command line argument parser which can't handle
 ## multiple copies of an option.
+##
+## If the third argument is provided, it is the name of a control file
+## for detSim.  This is primarily used to specify the detector to
+## simulate.
 ##
 function captain-run-genie-simple {
     local events=${1}
@@ -57,10 +63,16 @@ function captain-run-genie-simple {
 	return 1;
     fi
 
+    CONTROL_FILE=baseline
+    if [ ${#3} != 0 ]; then
+	CONTROL_FILE=$3
+    fi
+
     local prefix=$(basename $(captain-file "ghep") ".root")
     local filename="${prefix}.$(captain-run-number).ghep.root"
 
     gevgen_capt.exe -r $(captain-run-number) \
+	-o ${prefix} \
 	-n ${events} \
 	-f ${flux} |& captain-tee
     gntpc -f rootracker \
@@ -71,8 +83,10 @@ function captain-run-genie-simple {
     
     # Write a GEANT4 macro file to process the output.
     cat >> $(captain-file "g4in" "mac") <<EOF
-/dsim/control baseline 1.0
+/dsim/control ${CONTROL_FILE} 1.0
 /dsim/update
+
+/dsim/random/timeRandomSeed
 
 /generator/kinematics/rooTracker/input $(captain-file "gnmc")
 /generator/kinematics/set rooTracker
@@ -83,6 +97,7 @@ function captain-run-genie-simple {
 
 # Choose the position based on the density (and only in the drift volume).
 /generator/position/density/volume Drift
+
 /generator/position/set density
 
 /generator/add
