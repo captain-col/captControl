@@ -63,11 +63,6 @@ function captain-run-genie-simple {
 	return 1;
     fi
 
-    CONTROL_FILE=baseline
-    if [ ${#3} != 0 ]; then
-	CONTROL_FILE=$3
-    fi
-
     local prefix=$(basename $(captain-file "ghep") ".root")
     local filename="${prefix}.$(captain-run-number).ghep.root"
 
@@ -82,28 +77,39 @@ function captain-run-genie-simple {
     mv ${filename} $(captain-file "ghep")
     
     # Write a GEANT4 macro file to process the output.
-    cat >> $(captain-file "g4in" "mac") <<EOF
-/dsim/control ${CONTROL_FILE} 1.0
-/dsim/update
-
-/dsim/random/timeRandomSeed
+    cat > $(captain-file "g4in" "mac") <<EOF
 
 /generator/kinematics/rooTracker/input $(captain-file "gnmc")
 /generator/kinematics/set rooTracker
 
-# Have exactly one interaction per event.
+EOF
+
+   if [ ${#3} != 0 ]; then
+       # There is a macro file on the command line.
+       cat ${3} >> $(captain-file "g4in" "mac")
+   else
+       cat >> $(captain-file "g4in" "mac") <<EOF
+/dsim/random/randomSeed
+/dsim/control baseline 1.0
+/dsim/update
+
 /generator/count/fixed/number 1
 /generator/count/set fixed
 
-# Choose the position based on the density (and only in the drift volume).
-/generator/position/density/volume Drift
-
+/generator/positon/density/sample Drift
 /generator/position/set density
 
 /generator/add
+EOF
+   fi
 
+   if grep beamOn $(captain-file "g4in" "mac") >> /dev/null; then
+       if [ ${#2} != 0 ]; then
+	   cat >> $(captain-file "g4in" "mac") <<EOF
 /run/beamOn ${events}
 EOF
+       fi
+   fi
 
 }
 
@@ -132,6 +138,9 @@ function captain-process-detsim-macro {
     if [ ! -f ${input} ]; then
 	captain-error "No input macro file for detsim"
 	return 1
+    fi
+    if ! which DETSIM.exe >> /dev/null; then
+	captain-error "The detector simulation is not available."
     fi
     DETSIM.exe -o $(basename ${output} .root) ${input} |& captain-tee
 }
@@ -291,14 +300,14 @@ function captain-run-standard-event-loop {
     if [ ${#1} = 0 ]; then 
 	captain-error "Must provide an executable name."
     fi
+    if ! which ${1} >> /dev/null; then
+	captain-error "The executable ${1} is not available."
+    fi
     if [ ${#2} = 0 ]; then 
 	captain-error "Must provide a step for the input file."
     fi
     if [ ${#3} = 0 ]; then 
 	captain-error "Must provide a step for the output file."
-    fi
-    if ! which ${1} >> /dev/null; then
-	captain-error "First argument must be executable."
     fi
     local exeFile=$(which ${1})
     local inputFile=$(captain-file ${2})
