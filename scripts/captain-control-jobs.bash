@@ -89,14 +89,14 @@ EOF
        cat ${3} >> $(captain-file "g4in" "mac")
    else
        cat >> $(captain-file "g4in" "mac") <<EOF
-/dsim/random/randomSeed
+/dsim/random/timeRandomSeed
 /dsim/control baseline 1.0
 /dsim/update
 
 /generator/count/fixed/number 1
 /generator/count/set fixed
 
-/generator/positon/density/sample Drift
+/generator/position/density/sample Drift
 /generator/position/set density
 
 /generator/add
