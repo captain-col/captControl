@@ -69,10 +69,10 @@ function captain-run-genie-simple {
     gevgen_capt.exe -r $(captain-run-number) \
 	-o ${prefix} \
 	-n ${events} \
-	-f ${flux} |& captain-tee
+	-f ${flux} 2>&1 | captain-tee
     gntpc -f rootracker \
         -i ${filename} \
-        -o $(captain-file "gnmc") |& captain-tee
+        -o $(captain-file "gnmc") 2>&1 | captain-tee
     
     mv ${filename} $(captain-file "ghep")
     
@@ -142,7 +142,7 @@ function captain-process-detsim-macro {
     if ! which DETSIM.exe >> /dev/null; then
 	captain-error "The detector simulation is not available."
     fi
-    DETSIM.exe -o $(basename ${output} .root) ${input} |& captain-tee
+    DETSIM.exe -o $(basename ${output} .root) ${input} 2>&1 | captain-tee
 }
 
 ## \subsection captain-run-electronics-simulation
@@ -330,7 +330,7 @@ function captain-run-standard-event-loop {
     fi
     ${exeFile} ${CAPTAIN_EVENT_LOOP_OPTIONS} \
 	-o ${outputFile} \
-	${inputFile} |& captain-tee
+	${inputFile} 2>&1 | captain-tee
 }
 
 ## \subsection captain-override

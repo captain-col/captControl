@@ -11,7 +11,7 @@
 ## not defined by POSIX), as well as log, warning and error message
 ## utilities.
 
-## \secion systemWrappers System Program Wrappers.
+## \section systemWrappers System Program Wrappers.
 ##
 ## The program wrappers provide a set of standard ways to run system
 ## programs.  In general, the scripts try to stick to P0SIX, but there
@@ -136,22 +136,22 @@ function captain-log {
 function captain-warning {
     local frame=1
     echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
-	|& captain-tee >&2
+	2>&1 | captain-tee >&2
     local spacer=""
     echo "%% WARNING: Warning message at $(date +"%y-%m-%d %T")" \
-	|& captain-tee >&2
+	2>&1 | captain-tee >&2
     echo $* | fold -s -w 65 | while read line; do
 	echo "%% WARNING:${spacer} ${line}" \
-	    |& captain-tee >&2
+	    2>&1 | captain-tee >&2
 	spacer="  "
     done
     while caller $frame >> /dev/null; do
 	echo "%% WARNING: " $(printf "line %s (%s) in %s" $(caller $frame)) \
-	    |& captain-tee >&2
+	    2>&1 | captain-tee >&2
 	((++frame))
     done
     echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
-	|& captain-tee >&2
+	2>&1 | captain-tee >&2
     return
 }
 
@@ -170,20 +170,20 @@ function captain-warning {
 function captain-error {
     local frame=1
     echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
-	|& captain-tee >&2
+	2>&1 | captain-tee >&2
     echo "%% ERROR: Error message at $(date +"%y-%m-%d %T")" \
-	|& captain-tee >&2
+	2>&1 | captain-tee >&2
     echo $* | fold -s -w 65 | while read line; do
 	echo "%% ERROR:${spacer} ${line}" \
-	    |& captain-tee >&2
+	    2>&1 | captain-tee >&2
 	spacer="  "
     done
     while caller $frame >> /dev/null; do
 	echo "%% ERROR: " $(printf "line %s (%s) in %s" $(caller $frame)) \
-	    |& captain-tee >&2
+	    2>&1 | captain-tee >&2
 	((++frame))
     done
     echo "%% xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
-	|& captain-tee >&2
+	2>&1 | captain-tee >&2
     exit 1
 }
