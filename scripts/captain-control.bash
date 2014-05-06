@@ -33,7 +33,7 @@ captConTmp=$(captain-tempfile)
 
 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"  >> ${captConTmp}
 echo "% Starting job at" $(date) >> ${captConTmp}
-echo "%   Job UUID:" ${CAPTAIN_JOB_ID} >> ${captConTmp}
+echo "%   Job UUID:" ${CAPTAINJOB_ID} >> ${captConTmp}
 echo "%   CWD:" $(pwd) >> ${captConTmp}
 echo "%   Script:" $0 >> ${captConTmp}
 echo "%   Arguments:" $* >> ${captConTmp}
@@ -54,8 +54,34 @@ if [ $(captain-system) = "Linux" ]; then
     echo "%   IP Addresses:" $(hostname -i) >> ${captConTmp}
 fi
 
-# Generate the job hash
-export CAPTAIN_JOB_FULL_HASH=$(cat ${captConTmp} | captain-hash | cut -c 1-40)
+# Generate the tentative job hash code.  This will set the log file
+# name (even if it is overridden.
+tentativeCaptainHash=$(cat ${captConTmp} | captain-hash | cut -c 1-40)
+
+# Generate the long job hash
+export CAPTAIN_JOB_FULL_HASH;
+if [ ${#CAPTAIN_JOB_FULL_HASH} = 40 ]; then
+    # Set the log file.
+    CAPTAIN_JOB_LOG=captControl_${CAPTAIN_JOB_FULL_HASH}.log
+    echo | captain-tee
+    echo | captain-tee
+    echo "CONTINUE JOB AT: " $(date) "XXXXXXXXXXXXXXXXXXXXXXXXXX" | captain-tee
+    # Produce a warning
+    captain-warning "Override job hash code to continue previous job." 
+    captain-warning "Expected hash code:" "${tentativeCaptainHash}"
+    captain-warning "New hash code:" "${CAPTAIN_JOB_FULL_HASH}"
+elif [ ${#CAPTAIN_JOB_FULL_HASH} != 0 ]; then
+    # Set the log file.
+    CAPTAIN_JOB_LOG=captControl_${CAPTAIN_JOB_FULL_HASH}.log
+    # Clean up before exiting.
+    rm ${captConTmp}
+    captain-error "Overriding job id with invalid hash code:" \
+	"${CAPTAIN_JOB_FULL_HASH}"
+else
+    CAPTAIN_JOB_FULL_HASH=${tentativeCaptainHash}
+fi
+
+# Generate the short hash code for the job.
 export CAPTAIN_JOB_HASH=$(echo ${CAPTAIN_JOB_FULL_HASH} | cut -c 1-6)
 
 # Set the log file.

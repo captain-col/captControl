@@ -33,7 +33,6 @@ captain-tee () {
     if [ ${#CAPTAIN_JOB_LOG} != 0 ]; then
 	tee -a ${CAPTAIN_JOB_LOG}
     else
-	exit 1
 	cat
     fi
 }

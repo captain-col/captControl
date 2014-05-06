@@ -1,0 +1,17 @@
+#! /bin/bash
+# Always include the shebang line to emphasize that this is bash, not sh.
+
+# Add the captControl library functions.
+source captain-control.bash
+
+# Set the default filename parameters from the input file.
+captain-parse-filename mc_pg_muon-600_000000_000_elmc_997c378dab.root
+ 
+# Increment the processing version for the output files.
+captain-increment-processing-version 
+
+captain-file mc_pg_muon-600_000000_000_elmc_997c378dab.root
+captain-file cali
+
+captain-reset-job-hash
+captain-file cali

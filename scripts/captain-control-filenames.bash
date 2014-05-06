@@ -67,25 +67,31 @@ function captain-file {
 	    ${CAPTAIN_PROCESSING_VERSION}
     fi
 
-    # Build the file  hash code
+    # Build the file hash code
     local fileHash=$(echo ${CAPTAIN_JOB_ID} ${CAPTAIN_EXPERIMENT} \
 	${CAPTAIN_DATA_SOURCE} ${CAPTAIN_RUN_TYPE} \
 	${runNumbering} ${stepName} \
 	${CAPTAIN_JOB_FULL_HASH} ${CAPTAIN_PROCESSING_COMMENT} \
 	${fileExtension} | captain-hash | cut -c 1-4)
 
+    # Generate the job hash part of the file.
+    local jobHash=${CAPTAIN_JOB_HASH}
+    if [ ${#CAPTAIN_OVERRIDE_HASH} = 6 ]; then
+	jobHash=${CAPTAIN_OVERRIDE_HASH}
+    fi
+
     # Format the file name.
     if [ ${#CAPTAIN_PROCESSING_COMMENT} = 0 ]; then
 	printf "%s_%s_%s_%s_%s_%s%s.%s\n" \
 	    "${CAPTAIN_EXPERIMENT}" "${CAPTAIN_DATA_SOURCE}" \
 	    "${CAPTAIN_RUN_TYPE}" "${runNumbering}" ${stepName} \
-	    "${CAPTAIN_JOB_HASH}" "${fileHash}" "${fileExtension}" 
+	    "${jobHash}" "${fileHash}" "${fileExtension}" 
 	return
     fi
     printf "%s_%s_%s_%s_%s_%s%s_%s.%s\n" \
 	"${CAPTAIN_EXPERIMENT}" "${CAPTAIN_DATA_SOURCE}" "${CAPTAIN_RUN_TYPE}" \
 	"${runNumbering}" ${stepName} \
-	"${CAPTAIN_JOB_HASH}" "${fileHash}" \
+	"${jobHash}" "${fileHash}" \
 	"${CAPTAIN_PROCESSING_COMMENT}" "${fileExtension}" 
 }
 
@@ -258,7 +264,8 @@ function captain-increment-processing-version {
     if [ ${#CAPTAIN_PROCESSING_VERSION} = 0 ]; then
 	CAPTAIN_PROCESSING_VERSION=0;
     fi
-    $((++CAPTAIN_PROCESSING_VERSION))
+    captain-warning "New processing version is:" \
+	$((++CAPTAIN_PROCESSING_VERSION))
 }
 
 ## \subsection captain-processing-comment
@@ -294,6 +301,7 @@ function captain-processing-comment {
 ## Take a filename that has been constructed according to the captain
 ## file naming standard and determine the different field values.  The
 ## field values are saved for later use in a script.
+export CAPTAIN_OVERRIDE_HASH
 function captain-parse-filename {
     if [ ${#1} = 0 ]; then 
 	return
@@ -308,5 +316,16 @@ function captain-parse-filename {
     CAPTAIN_RUN_TYPE=${parsedArray[2]}
     CAPTAIN_RUN_NUMBER=${parsedArray[3]}
     CAPTAIN_PROCESSING_VERSION=${parsedArray[4]}
+    CAPTAIN_OVERRIDE_HASH=$(echo ${parsedArray[6]} | cut -c 1-6)
     CAPTAIN_PROCESSING_COMMENT=${parsedArray[7]}
+}
+
+## \subsection captain-reset-job-hash
+## \code
+## captain-reset-job-hash
+## \endcode
+##
+## Reset the job hash code to the original default value.
+function captain-reset-job-hash {
+    CAPTAIN_OVERRIDE_HASH=""
 }

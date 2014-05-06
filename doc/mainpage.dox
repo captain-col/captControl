@@ -57,7 +57,7 @@
    - \subpage captainControlUtility : How to write output to the job
      log file, and other utility functions.
 
- \subsection An example using GEANT4 macros
+ \subsection geantMacro An example using GEANT4 macros
 
  Another common type of job is to process a particle gun generated using a
  GEANT4 macro file.  The macro files are described in more detail inside the
@@ -93,7 +93,7 @@
 
  This will produce output files with a standarized names. 
 
- \subsection An example reprocessing an existing file
+ \subsection reprocessFile An example: Reprocessing an existing file
 
  This example shows how to reprocess an existing file.  In this example,
  the input file is coming from the electronics simulation stage.  The
@@ -118,7 +118,15 @@
  \endcode
 
  The output filename parameters can be overridden using the normal filename
- control functions after the captain-parse-file function has been run.  
+ control functions after the captain-parse-file function has been run.
+ The job will have a different job hash.  The job hash can be overridden by
+ setting the CAPTAIN_JOB_FULL_HASH environment variable.  For instance, if
+ the file reprocess.sh contains the previous code, then
+ \code
+ CAPTAIN_JOB_FULL_HASH=<the-hash-from-the-job> reprocess.sh
+ \endcode
+ will reuse the old hash code (where <the-hash-from-the-job> is copied from
+ the old log file.
 
  \section filenameConvention Filename Convention
 
