@@ -331,6 +331,7 @@ function captain-run-standard-event-loop {
     ${exeFile} ${CAPTAIN_EVENT_LOOP_OPTIONS} \
 	-o ${outputFile} \
 	${inputFile} 2>&1 | captain-tee
+    captain-log "Completed: " $exeFile
 }
 
 ## \subsection captain-override
