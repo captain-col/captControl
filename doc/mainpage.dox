@@ -4,7 +4,7 @@
 
 /*! \mainpage The CAPTAIN job control package.
 
- \section captControl Introduction
+ \section captControl captControl
 
  This package provides the run control tools used to build captain jobs.
  The CAPTAIN job control language is "bash", and this provides the tools to
