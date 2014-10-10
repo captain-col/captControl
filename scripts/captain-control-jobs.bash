@@ -272,10 +272,43 @@ function captain-run-reconstruction {
     if [ ${#1} != 0 ]; then
 	input=${1}
 	shift
-    elif [ ! -f $(captain-file cali) ]; then
-	captain-run-calibration
+    elif captain-run-calibration; then
+	input=cali
     fi 
     captain-run-standard-event-loop CAPTRECON.exe ${input} reco
+}
+
+
+## \subsection captain-run-summary
+##
+## \code
+## captain-run-summary [reco-file.root]
+## \endcode
+## 
+
+## Summarize a file.  This usually takes a "reco" file, but can handle
+## any kind of input.  It only summarizes the information that is
+## actually available.  The filenames are controlled using the usual
+## \ref filenameGeneration routines.  If this can't find a "reco"
+## file, then it will automatically run the reconstruction by calling
+## captain-run-reconstruction.  Normally, an input file name is built
+## using the standard file name routines so the argument
+## "reco-file.root" won't be provided, however, if a non-standard
+## input file needs to be processed, the filename can be given as the
+## first argument.  If an input file is provided, then the output file
+## name will be constructed using the usual \ref filenameGeneration
+## routines.
+
+function captain-run-summary {
+    local input=reco
+
+    if [ ${#1} != 0 ]; then
+	input=${1}
+	shift
+    elif captain-run-reconstruction; then
+	input=reco
+    fi 
+    captain-run-standard-event-loop captSummary.exe ${input} anal
 }
 
 
