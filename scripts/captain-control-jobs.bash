@@ -104,7 +104,10 @@ EOF
    fi
 
    if grep beamOn $(captain-file "g4in" "mac") >> /dev/null; then
+       captain-log "Number of events set in " $(captain-file "g4in" "mac")
+   else
        if [ ${#2} != 0 ]; then
+	   captain-log "Set number of events to generate"
 	   cat >> $(captain-file "g4in" "mac") <<EOF
 /run/beamOn ${events}
 EOF
