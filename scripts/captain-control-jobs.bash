@@ -14,12 +14,12 @@
 ## \subsection captain-run-genie-simple
 ##
 ## \code
-## captain-run-genie-simple events flux [control-macro]
+## captain-run-genie-simple events flux [geom-macro] [kinem-macro]
 ## \endcode
 ##
 ## This runs the GENIE interaction MC to product ghep (in the native
 ## GENIE ghep format) and gnmc (in the rootracker) files.  It has two
-## required arguments and a third optional argument.  The first
+## required arguments and two optional argument.  The first
 ## argument is the number of events to generate and the second
 ## argument is the flux description.  The format of the flux is
 ## documented in captainGENIE.cxx.
@@ -45,10 +45,48 @@
 ## forced by the GENIE command line argument parser which can't handle
 ## multiple copies of an option.
 ##
-## If the third argument is provided, it is the name of a control file
-## for detSim.  This is primarily used to specify the detector to
-## simulate.
+## If the third argument is provided, it is the name of a geometry
+## control macro for detSim and follows the usual GEANT4 macro syntax.
+## It is intended to set the detector parameters for the simulation
+## (e.g. CAPTAIN vs mini-CAPTAIN, wire spacing, &c).  The geometry
+## control macro must end with a "/dsim/update" command so that the
+## detector simulation will build the geometry.  If a geometry control
+## macro is not provided, then a default version is used.
 ##
+## \code
+## /dsim/random/timeRandomSeed
+## /dsim/control baseline 1.0
+## /dsim/update
+## \endcode
+##
+## A simple geometry macro to simulate miniCAPTAIN would be:
+##
+## \code
+## /dsim/random/timeRandomSeed
+## /dsim/control mini-captain 1.0
+## /dsim/update
+## \endcode
+##
+## If the fourth argument is provided, it is the name of a kinematics
+## control macro which follows the usual GEANT4 macro syntax.  It is
+## intended to override the default uniform vertex distribution, but
+## the default definition should work for all but specific special
+## case studies.  The default distributes the neutrino vertices within
+## the active volume of the TPC with exactly one neutrino interaction
+## per event.
+##
+## \code
+## /generator/count/fixed/number 1
+## /generator/count/set fixed
+## /generator/position/density/sample Drift
+## /generator/position/set density
+## /generator/add
+## \endcode
+##
+##
+## The kinematics control macro can define multiple generators, but
+## the first is assumed to take it's kinematics from the GENIE
+## rooTracker file.
 function captain-run-genie-simple {
     local events=${1}
     local flux=${2}
@@ -76,7 +114,24 @@ function captain-run-genie-simple {
     
     mv ${filename} $(captain-file "ghep")
     
+    ##################################################
     # Write a GEANT4 macro file to process the output.
+    ##################################################
+
+    # Define the detector geometry, set up the random number
+    # generator, and define other default values.
+    if [ ${#3} != 0 ]; then
+	# There is a macro file on the command line.
+	cat ${3} >> $(captain-file "g4in" "mac")
+    else
+	cat >> $(captain-file "g4in" "mac") <<EOF
+/dsim/random/timeRandomSeed
+/dsim/control baseline 1.0
+/dsim/update
+EOF
+    fi
+    
+    # Tell the GEANT4 macro about the GENIE input kinematics file.
     cat > $(captain-file "g4in" "mac") <<EOF
 
 /generator/kinematics/rooTracker/input $(captain-file "gnmc")
@@ -84,15 +139,13 @@ function captain-run-genie-simple {
 
 EOF
 
-   if [ ${#3} != 0 ]; then
-       # There is a macro file on the command line.
-       cat ${3} >> $(captain-file "g4in" "mac")
-   else
-       cat >> $(captain-file "g4in" "mac") <<EOF
-/dsim/random/timeRandomSeed
-/dsim/control baseline 1.0
-/dsim/update
-
+    # Tell the detector simulation how to distribute the interactions
+    # in the GENIE file.
+    if [ ${#4} != 0 ]; then
+	# There is a macro file on the command line.
+	cat ${4} >> $(captain-file "g4in" "mac")
+    else
+	cat >> $(captain-file "g4in" "mac") <<EOF
 /generator/count/fixed/number 1
 /generator/count/set fixed
 
@@ -144,6 +197,7 @@ function captain-process-detsim-macro {
     fi
     if ! which DETSIM.exe >> /dev/null; then
 	captain-error "The detector simulation is not available."
+	return 1
     fi
     DETSIM.exe -o $(basename ${output} .root) ${input} 2>&1 | captain-tee
 }
