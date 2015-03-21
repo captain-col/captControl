@@ -114,6 +114,15 @@ function captain-run-genie-simple {
     
     mv ${filename} $(captain-file "ghep")
     
+
+    # Tell the GEANT4 macro about the GENIE input kinematics file.
+    cat > $(captain-file "g4in" "mac") <<EOF
+
+/generator/kinematics/rooTracker/input $(captain-file "gnmc")
+/generator/kinematics/set rooTracker
+EOF
+
+
     ##################################################
     # Write a GEANT4 macro file to process the output.
     ##################################################
@@ -131,13 +140,6 @@ function captain-run-genie-simple {
 EOF
     fi
     
-    # Tell the GEANT4 macro about the GENIE input kinematics file.
-    cat > $(captain-file "g4in" "mac") <<EOF
-
-/generator/kinematics/rooTracker/input $(captain-file "gnmc")
-/generator/kinematics/set rooTracker
-
-EOF
 
     # Tell the detector simulation how to distribute the interactions
     # in the GENIE file.
