@@ -152,33 +152,39 @@
   In the file name the fields are as follows:
 
   - ee : The experiment.  New values should be defined (and documented),
-     but they "should" be two characters.
+     but they "should" be two characters.  It is set using captain-experiment. 
 
+     - "la" : The Los Alamos commissioning.
+     - "fl" : The Fermilab commissioning.
+     - "nb" : The neutron beam running at LANSCE.
+     - "cm" : CAPTAIN-MINERvA running.
+     - "bn" : Running at the BNB.
+     - "nt" : Running at the numi target area.
      - "mc" : A pure physics study.  MC studies associated with a
               particular setup should use the experiment code for that
               setup (e.g. MC simulation the LANSCE runs should use "nb")
-
      - "ts" : A test setup.
-
-     - "nb" : The neutron beam running at LANSCE.
-
      - "xx" : Not set.
 
-  - gg : The data source, or run category.
-    - For Monte Carlo:
+  - gg : The data source (e.g. CAPTAIN or miniCAPTAIN) set using
+       captain-data-source:
+      - "cp" : CAPTAIN data
+      - "mc" : miniCAPTAIN data
+      - "sa" : Standalone (meaning some other config. Specify in sub-field).
+    - For Monte Carlo the type is set in the sub-field (for example, a
+          miniCAPTAIN particle gun would be "mi-pg"):
       - "pg" : Particle Gun
       - "nt" : NEUT Neutrino Monte Carlo
       - "gn" : Genie Neutrino Monte Carlo
       - "cs" : Cosmic Ray Monte Carlo
-    - For Data:
-      - "gr" : Global data
-      - "sa" : Stand-alone data with the subdetector set as a sub-field.
-
+      	
   - ppp : The run trigger type or particle type depending on the context.  
-    - For data or full simulations, it's the trigger type
+    - For data or full simulations, it's the "important" trigger type
       - "spl" : Spill Triggers
-      - "cos" : Cosmic Triggers
-      - "ped" : Pedestal Triggers
+      - "mtl" : Muon Telescope Triggers
+      - "pls" : Pulser Triggers with an injected pulse
+      - "lsr" : Laser Triggers
+      - "ped" : Pedestal Triggers without an injected pulse.
       - "otx" : Any other trigger types.  
     - For particle gun simulations, it's the particle type
 
@@ -196,6 +202,7 @@
     processing the file comes from.  The standard "steps" are
       - g4mc : The detector simulation
       - elmc : The electronics simulation
+      - digt : The converted digits
       - cali : The calibrations
       - reco : The reconstruction
       - dst  : The data summary tree
