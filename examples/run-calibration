@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# An example of a script using captain-control to run the calibration on
+#  cosmic ray data for miniCAPTAIN.
+
+# setup the environment.  This assumes that the script is running in an
+# initialized package.
+source captain-control.bash
+
+captain-experiment la   #this is Los Alamos commissioning.
+captain-data-source mc  #this is miniCAPTAIN
+captain-run-type mt     #trigger with the muon telescope
+captain-run-number ${RUN_NUMBER}
+captain-run-calibrations ${RAW_INPUT_FILE}
+
