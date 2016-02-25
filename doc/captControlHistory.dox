@@ -12,4 +12,18 @@ FIRST CAPTAIN FREEZE
 
 This defines a baseline freeze for use in the mini-CAPTAIN cosmic runs.
 
+
+\section captControl_v0r1p0_history Version 0.1.0
+
+Freeze information:
+   - Freeze Date: Thu Feb 25 13:48:40 2016
+   - Freeze User: mcgrew
+   - Freeze Host: boxer boxer 
+
+
+DOCUMENTATION/DEFINITION FIXES
+
+* Update the naming conventions: This defines prefixes to be used for
+  different running conditions.
+
 */
