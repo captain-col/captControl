@@ -257,7 +257,7 @@ function captain-run-electronics-simulation {
 ## \subsection captain-run-calibration
 ##
 ## \code
-## captain-run-calibration [raw-file.root]
+## captain-run-calibration [filename] [options...]
 ## \endcode
 ## 
 
@@ -269,12 +269,12 @@ function captain-run-electronics-simulation {
 ## captain-run-electronnics-simulation.  It will also look to see if
 ## it can find the correct uncalibrated data file (i.e. a "digit file"
 ## with a step name of "digt").  Normally, an input file name is built
-## using the standard file name routines so the argument
-## "raw-file.root" won't be provided, however, if a non-standard
-## input file needs to be processed, the filename can be given as the
-## first argument.  If an input file is provided, then the output file
-## name will be constructed using the usual \ref filenameGeneration
-## routines.
+## using the standard file name routines so the argument "filename"
+## won't be provided, however, if a non-standard input file needs to
+## be processed, the filename can be given as the first argument.  The
+## remaining arguments are passed to the calibration executable.  If
+## an input file is provided, then the output file name will be
+## constructed using the usual \ref filenameGeneration routines.
 function captain-run-calibration {
     local input
 
@@ -282,12 +282,8 @@ function captain-run-calibration {
     if [ ${#1} != 0 ]; then
 	input=${1}
 	shift
-    elif [ -f $(captain-file digt) ]; then
-	input=digt
     elif [ -f $(captain-file elmc) ]; then
 	input=elmc
-    elif captain-run-digit-unpacker; then
-	input=digt
     elif captain-run-electronics-simulation; then
 	input=elmc
     else
@@ -296,14 +292,15 @@ function captain-run-calibration {
 	return 1
     fi
 
+    # Now check if there are any options
+    if [ ${#1} != 0 ]; then
+	CAPTAIN_EVENT_LOOP_OPTIONS=${*}
+    fi
+    
     # Run the event loop in the standard way.
     captain-run-standard-event-loop CLUSTERCALIB.exe ${input} cali
 
-}
-
-# This is a dummy routine for now...
-function captain-run-digit-unpacker {
-    return 1
+    CAPTAIN_EVENT_LOOP_OPTIONS=""
 }
 
 ## \subsection captain-run-reconstruction
@@ -328,13 +325,22 @@ function captain-run-digit-unpacker {
 function captain-run-reconstruction {
     local input=cali
 
+    # Check to see if we can find the input file.
     if [ ${#1} != 0 ]; then
 	input=${1}
 	shift
     elif captain-run-calibration; then
 	input=cali
     fi 
+
+    # Now check if there are any options
+    if [ ${#1} != 0 ]; then
+	CAPTAIN_EVENT_LOOP_OPTIONS=${*}
+    fi
+
     captain-run-standard-event-loop CAPTRECON.exe ${input} reco
+
+    CAPTAIN_EVENT_LOOP_OPTIONS=""
 }
 
 
@@ -361,13 +367,23 @@ function captain-run-reconstruction {
 function captain-run-summary {
     local input=reco
 
+    # Check to see if we can find the input file.
     if [ ${#1} != 0 ]; then
 	input=${1}
 	shift
     elif captain-run-reconstruction; then
 	input=reco
     fi 
-    captain-run-standard-event-loop captSummary.exe ${input} anal
+
+    # Now check if there are any options
+    if [ ${#1} != 0 ]; then
+	CAPTAIN_EVENT_LOOP_OPTIONS=${*}
+    fi
+
+    captain-run-standard-event-loop captSummary.exe ${input} dst
+
+    CAPTAIN_EVENT_LOOP_OPTIONS=""
+
 }
 
 
