@@ -150,11 +150,23 @@ EOF
 	cat >> $(captain-file "g4in" "mac") <<EOF
 /generator/count/fixed/number 1
 /generator/count/set fixed
-
 /generator/position/density/sample Drift
+# /generator/position/density/minX -75.0 cm
+# /generator/position/density/maxX -50.0 cm
+# /generator/position/density/minY -50.0 cm
+# /generator/position/density/maxY  50.0 cm
+# /generator/position/density/minZ -75.0 cm
+# /generator/position/density/maxZ  25.0 cm
 /generator/position/set density
-
 /generator/add
+
+# Create rock muon simulator for NuMI.  This approximate the minerva location.
+/generator/kinematics/set rock
+/generator/count/set mean 
+/generator/count/mean/number 13.0 
+/generator/position/set free
+/generator/add
+
 EOF
    fi
 
