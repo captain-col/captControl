@@ -1,15 +1,36 @@
 #!/bin/bash
 
-# An example of a script using captain-control to run the calibration on
-#  cosmic ray data for miniCAPTAIN.
+# An example of a script using captain-control to run the calibration.
+#  DO NOT USE THIS SCRIPT.  There are better scripts in clusterCalib
+#  and else where.
 
 # setup the environment.  This assumes that the script is running in an
 # initialized package.
 source captain-control.bash
 
-captain-experiment la   #this is Los Alamos commissioning.
+if [ ${#1} = 0 ]; then
+    echo "usage: " $0 "<file>" "[trigger]"
+    captain-error "Invalid arguments"
+fi
+RAW_INPUT_FILE=${1}
+shift
+
+TRIGGER_TYPE="cos"
+if [ ${#1} != 0 ]; then
+    TRIGGER_TYPE=${1}
+fi
+shift
+
+if [ ${#1} != 0 ]; then
+    echo "usage: " $0 "<file>" "[trigger]"
+    captain-error "To many arguments"
+fi
+
+exit 0
+
+captain-experiment ${RUN_TYPE}   #this is Los Alamos commissioning.
 captain-data-source mc  #this is miniCAPTAIN
-captain-run-type mt     #trigger with the muon telescope
+captain-run-type ${TRIGGER_TYPE} 
 captain-run-number ${RUN_NUMBER}
 captain-run-calibrations ${RAW_INPUT_FILE}
 
