@@ -168,8 +168,10 @@
 
   - gg : The data source (e.g. CAPTAIN or miniCAPTAIN) set using
        captain-data-source:
-      - "cp" : CAPTAIN data
-      - "mc" : miniCAPTAIN data
+      - "cp" : CAPTAIN detector
+      - "mcp" : miniCAPTAIN Detector (with both TPC and PDS in file)
+      - "mtpc" : miniCAPTAIN TPC
+      - "mpds" : miniCAPTAIN Photon Detection System
       - "sa" : Standalone (meaning some other config. Specify in sub-field).
     - For Monte Carlo the type is set in the sub-field (for example, a
           miniCAPTAIN particle gun would be "mi-pg"):

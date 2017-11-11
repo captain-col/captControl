@@ -21,11 +21,15 @@ fi
 # Define the utility functions.
 source captain-control-utility.bash
 
-# Define the job identifier, but only if not inheriting one.
+# Define the job identifier, but only if not inheriting one.  The job
+# identifier is an internal variable that is mostly useless.  You are
+# probably more interested in CAPTAIN_JOB_HASH, or
+# CAPTAIN_JOB_FULL_HASH
 if [ ${#CAPTAIN_JOB_ID} = 0 ]; then
     export CAPTAIN_JOB_ID=$(captain-uuid)
 else
     captain-warning "Multiple initializations with captain-control.bash"
+    return
 fi
 
 # Write a job summary to a temporary file
@@ -33,7 +37,7 @@ captConTmp=$(captain-tempfile)
 
 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"  >> ${captConTmp}
 echo "% Starting job at" $(date) >> ${captConTmp}
-echo "%   Job UUID:" ${CAPTAINJOB_ID} >> ${captConTmp}
+echo "%   Job Id:" ${CAPTAIN_JOB_ID} >> ${captConTmp}
 echo "%   CWD:" $(pwd) >> ${captConTmp}
 echo "%   Script:" $0 >> ${captConTmp}
 echo "%   Arguments:" $* >> ${captConTmp}
