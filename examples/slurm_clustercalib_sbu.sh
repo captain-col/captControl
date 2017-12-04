@@ -154,7 +154,7 @@ captain-run-type spl
 captain-run-number ${RUN_NUMBER}
 
 # Let the real work begin.
-captain-run-calibration ${UBDAQ_FILE} -tubdaq -G miniCAPTAIN
+captain-run-calibration ${UBDAQ_FILE} -t 'ubdaq(temp=200)' -G miniCAPTAIN
 
 # Move the calibrated files to the final location.
 mkdir -p ${OUTPUT_CALI}
