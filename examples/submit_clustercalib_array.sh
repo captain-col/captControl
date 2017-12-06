@@ -2,4 +2,4 @@
 # An example script to submit an array of SLURM jobs.  This should be
 # copied and customized for a specific script.
 
-sbatch --nice -a1-$(cat $1 | wc -l)%24 ./slurm_clustercalib_sbu.sh $1
+sbatch --time=48:00:00 --array=1-$(cat $1 | wc -l) ./slurm_clustercalib_pdsf.sh $1

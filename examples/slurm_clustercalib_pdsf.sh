@@ -78,11 +78,11 @@ echo ${OUTPUT_JOBS}
 # Adjust directory to point to the CAPTAIN software installation.
 # This should be the absolute path since batch systems can do evil
 # things to your path.
-CAPTAIN=/home/captain/export/CAPTAIN
+CAPTAIN=/project/projectdirs/captain/releases/CAPTAIN
 
 # Adjust directory to point to the directory to create a job project
 # in.  All of the jobs will be run inside the same project.
-JOB_AREA=/storage/t2k/CAPTAIN/jobs
+JOB_AREA=/project/projectdirs/captain/data/jobs
 
 # The base name of the project to use for this production.
 JOB_PROJECT=clustercalib_${PRODUCTION_VERSION}
@@ -114,6 +114,7 @@ cd ${JOB_PROJECT}
 source ${CAPTAIN}/captain.profile
 JOB_PACKAGE=$(basename $(mktemp -d -p . ${JOB_PACKAGE}.XXXXXXXX))
 cmt create ${JOB_PACKAGE} v0 
+chmod g+rw ${JOB_PACKAGE}
 
 # Go into the job package and get things set up.
 cd ${JOB_PACKAGE}/cmt
@@ -154,7 +155,7 @@ captain-run-type spl
 captain-run-number ${RUN_NUMBER}
 
 # Let the real work begin.
-captain-run-calibration ${UBDAQ_FILE} -t 'ubdaq(temp=200)' -G miniCAPTAIN
+captain-run-calibration ${UBDAQ_FILE} -t 'ubdaq(temp=200)' -G miniCAPTAIN 
 
 # Move the calibrated files to the final location.
 mkdir -p ${OUTPUT_CALI}
