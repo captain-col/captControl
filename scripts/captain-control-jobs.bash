@@ -272,7 +272,6 @@ function captain-run-electronics-simulation {
 ## captain-run-calibration [filename] [options...]
 ## \endcode
 ## 
-
 ## Process a file from the raw data or electronics simulation step and
 ## product a "cali" file.  The filenames are controlled using the
 ## usual \ref filenameGeneration routines.  For MC, this expects an
@@ -321,7 +320,6 @@ function captain-run-calibration {
 ## captain-run-reconstruction [cali-file.root]
 ## \endcode
 ## 
-
 ## Process a file from the calibration step and product a "reco" file.
 ## The filenames are controlled using the usual \ref
 ## filenameGeneration routines.  If this can't find a "cali" file,
@@ -362,7 +360,6 @@ function captain-run-reconstruction {
 ## captain-run-summary [reco-file.root]
 ## \endcode
 ## 
-
 ## Summarize a file.  This usually takes a "reco" file, but can handle
 ## any kind of input.  It only summarizes the information that is
 ## actually available.  The filenames are controlled using the usual
@@ -393,6 +390,38 @@ function captain-run-summary {
     fi
 
     captain-run-standard-event-loop captSummary.exe ${input} dst
+
+    CAPTAIN_EVENT_LOOP_OPTIONS=""
+
+}
+
+
+## \subsection captain-run-treemaker
+##
+## \code
+## captain-run-treemaker [reco-file.root]
+## \endcode
+## 
+## Summarize a file into a flat tree.  This takes a "reco"
+## file and builds a flat tree for analysis.
+
+function captain-run-treemaker {
+    local input=reco
+
+    # Check to see if we can find the input file.
+    if [ ${#1} != 0 ]; then
+	input=${1}
+	shift
+    elif captain-run-reconstruction; then
+	input=reco
+    fi 
+
+    # Now check if there are any options
+    if [ ${#1} != 0 ]; then
+	CAPTAIN_EVENT_LOOP_OPTIONS=${*}
+    fi
+
+    captain-run-standard-event-loop TREEMAKER.exe ${input} flat
 
     CAPTAIN_EVENT_LOOP_OPTIONS=""
 
