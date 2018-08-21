@@ -339,6 +339,8 @@ function captain-run-reconstruction {
     if [ ${#1} != 0 ]; then
 	input=${1}
 	shift
+    elif [ -f $(captain-file cali) ]; then
+	input=cali
     elif captain-run-calibration; then
 	input=cali
     fi 
@@ -380,6 +382,8 @@ function captain-run-summary {
     if [ ${#1} != 0 ]; then
 	input=${1}
 	shift
+    elif [ -f $(captain-file reco) ]; then
+	input=reco
     elif captain-run-reconstruction; then
 	input=reco
     fi 
@@ -412,6 +416,8 @@ function captain-run-treemaker {
     if [ ${#1} != 0 ]; then
 	input=${1}
 	shift
+    elif [ -f $(captain-file reco) ]; then
+	input=reco
     elif captain-run-reconstruction; then
 	input=reco
     fi 
